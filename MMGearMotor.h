@@ -1,9 +1,9 @@
+#ifndef MMGEARMOTOR_H
+#define MMGEARMOTOR_H
+
 #include "TB6612FNG.h"
 #include <ESP32Encoder.h>
 #include <FastPID.h>
-
-#ifndef MMGEARMOTOR_H
-#define MMGEARMOTOR_H
 
 enum ControlMode { DUTY_CYCLE, POSITION, VELOCITY, NONE };
 
@@ -23,7 +23,7 @@ private:
     float setpoint;
     float maxSpeed;
 public:
-    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, const PIDConstants posConst, const PIDConstants velConst) : driver(motorDriver), motorID(id) {};
+    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, const PIDConstants posConst, const PIDConstants velConst);
     void setControlMode(ControlMode mode);
     void setTargetPosition();
     void setTargetVelocity();
