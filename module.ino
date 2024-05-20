@@ -47,10 +47,20 @@
 #define DIN1 36
 #define DIN2 39
 
-const PIDConstants positionPID = {1, 0, 0};
-TB6612FNG motorDriver(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
 
-MMGearMotor a(motorDriver, 0, AIN1, AIN2, positionPID, positionPID);
+// Out of 255: 6V out of 8.4 V = 182
+#define MAX_SPEED 180
+
+const PIDConstants positionPID = {0.1, 0, 0};
+const PIDConstants velocityPID = {0, 0, 0};
+
+TB6612FNG driverAB(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
+TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
+
+MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID);
+MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID);
+MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID);
+MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID);
 
 void setup()
 {

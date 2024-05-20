@@ -8,7 +8,7 @@
 enum ControlMode { DUTY_CYCLE, POSITION, VELOCITY, NONE };
 
 struct PIDConstants {
-    int kP; int kI; int kD;
+    float kP; float kI; float kD;
 };
 
 class MMGearMotor
@@ -20,14 +20,18 @@ private:
     ESP32Encoder encoder;
     int motorID;
     ControlMode currentMode = NONE;
-    float setpoint;
-    float maxSpeed;
+    int posSetpoint;
+    int velSetpoint;
+    int maxOutput;
+    int lastPos;
+    int currPos;
+    int velocity;
 public:
-    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, const PIDConstants posConst, const PIDConstants velConst);
+    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst);
     void setControlMode(ControlMode mode);
-    void setTargetPosition();
-    void setTargetVelocity();
-    void setOutput();
+    void setTargetPosition(int pos);
+    void setTargetVelocity(int pos);
+    void setOutput(int speed);
     void periodic();
     void stop();
     void zero();
