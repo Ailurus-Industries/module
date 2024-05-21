@@ -58,16 +58,23 @@ TB6612FNG driverAB(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
 TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
 
 MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID);
-MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID);
-MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID);
-MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID);
+// MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID);
+// MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID);
+// MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID);
 
 void setup()
 {
-    
+    Serial.begin(115200);
+    a.setControlMode(DUTY_CYCLE);
+    a.setOutput(50);
 }
 
 void loop()
 {
-	
+	a.periodic();
+    Serial.print("Pos: ");
+    Serial.print(a.getPosition());
+    Serial.print(" Output: ");
+    Serial.println(a.getOutput());
+    delay(100);
 }

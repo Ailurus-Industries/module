@@ -1,6 +1,7 @@
 #include "MMGearMotor.h"
 #include <FastPID.h>
 #include <Arduino.h>
+#include "TB6612FNG.h"
 
 MMGearMotor::MMGearMotor(TB6612FNG &motorDriver, int id, int enc1, int enc2, 
                         int maxOutput, PIDConstants posConst, PIDConstants velConst) 
@@ -24,28 +25,26 @@ void MMGearMotor::periodic()
         case DUTY_CYCLE:
             break;
         case POSITION:
-            int output = posPID.step(posSetpoint, currPos);
-            setOutput(output);
+            setOutput(posPID.step(posSetpoint, currPos));
             break;
         case VELOCITY:
-            int output = velPID.step(velSetpoint, velocity);
-            setOutput(output);
+            setOutput(velPID.step(velSetpoint, velocity));
             break;
-        default: 
-            stop();
-            return;
     };
+    driver.run(motorID, currOutput);
     lastPos = getPosition();
 }
 
 void MMGearMotor::stop()
 {
+    // NOTE: This may cause bugs if speed is set without changing mode
+    currOutput = 0;
     driver.run(motorID, 0);
 }
 
 void MMGearMotor::setControlMode(ControlMode mode)
 {
-    currentMode = currentMode;
+    currentMode = mode;
 }
 
 void MMGearMotor::setTargetPosition(int pos)
@@ -60,7 +59,7 @@ void MMGearMotor::setTargetVelocity(int pos)
 
 void MMGearMotor::setOutput(int speed)
 {
-    driver.run(motorID, constrain(speed, -maxOutput, maxOutput));
+    currOutput = constrain(speed, -maxOutput, maxOutput);
 }
 
 void MMGearMotor::zero()
@@ -78,4 +77,14 @@ void MMGearMotor::setPosition(int pos)
 int MMGearMotor::getPosition()
 {
     return encoder.getCount();
+}
+
+int MMGearMotor::getOutput()
+{
+    return currOutput;
+}
+
+TB6612FNG& MMGearMotor::getDriver()
+{
+    return driver;
 }

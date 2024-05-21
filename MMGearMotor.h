@@ -26,6 +26,7 @@ private:
     int lastPos;
     int currPos;
     int velocity;
+    int currOutput;
 public:
     MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst);
     void setControlMode(ControlMode mode);
@@ -37,6 +38,8 @@ public:
     void zero();
     void setPosition(int pos);
     int getPosition();
+    int getOutput();
+    TB6612FNG& getDriver();
 };
 
 #endif

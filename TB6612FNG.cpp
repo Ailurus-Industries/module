@@ -1,15 +1,9 @@
 #include "TB6612FNG.h"
 #include <Arduino.h>
 
-TB6612FNG::TB6612FNG(int PWMA, int PWMB, int AIN1, int AIN2, int BIN1, int BIN2, int STBY) {
-    this->STBY = STBY;
-    this->PWMA = PWMA;
-    this->PWMB = PWMA;
-    this->AIN1 = AIN1;
-    this->AIN2 = AIN2;
-    this->BIN1 = BIN1;
-    this->BIN2 = BIN2;
-
+TB6612FNG::TB6612FNG(int PWMA, int PWMB, int AIN1, int AIN2, int BIN1, int BIN2, int STBY) :
+    STBY(STBY), PWMA(PWMA), PWMB(PWMB), AIN1(AIN1), AIN2(AIN2), BIN1(BIN1), BIN2(BIN2)
+{
     pinMode(STBY, OUTPUT);
 
     pinMode(PWMA, OUTPUT);
