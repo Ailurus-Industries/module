@@ -19,7 +19,7 @@ void MMGearMotor::periodic()
     velocity = currPos - lastPos;
     switch (currentMode) 
     {
-        case NONE:
+        case STOP:
             stop();
             break;
         case DUTY_CYCLE:
