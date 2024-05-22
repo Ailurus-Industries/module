@@ -41,6 +41,7 @@ const char HEADER[3] = {'C', 'O', 'N'};
 class ControllerStream
 {
     private:
+        char rawIncomingData[sizeof(ControllerData)];
         int lastMessageIndex = 0;
         int controllerPort;
         ControllerData currentData;
@@ -49,6 +50,7 @@ class ControllerStream
     public:
         ControllerStream(int controllerPort);
         void init(char ssid[], char pwd[], int udpPort);
+        void init(char ssid[], int udpPort);
         void updateData();
         void printWiFiStatus();
         ControllerData getControllerData();

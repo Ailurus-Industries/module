@@ -4,8 +4,8 @@
 #include "TB6612FNG.h"
 
 MMGearMotor::MMGearMotor(TB6612FNG &motorDriver, int id, int enc1, int enc2, 
-                        int maxOutput, PIDConstants posConst, PIDConstants velConst) 
-                        : driver(motorDriver), motorID(id), maxOutput(maxOutput)
+                        int maxOutput, PIDConstants posConst, PIDConstants velConst, bool inverted) 
+                        : driver(motorDriver), motorID(id), maxOutput(maxOutput), inverted(inverted)
 {
     this->encoder.attachFullQuad(enc1, enc2);
     this->encoder.setCount(0);
@@ -76,6 +76,9 @@ void MMGearMotor::setPosition(int pos)
 
 int MMGearMotor::getPosition()
 {
+    if (inverted) {
+        return -encoder.getCount();
+    }
     return encoder.getCount();
 }
 

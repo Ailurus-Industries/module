@@ -27,8 +27,9 @@ private:
     int currPos;
     int velocity;
     int currOutput;
+    bool inverted;
 public:
-    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst);
+    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst, bool inverted);
     void setControlMode(ControlMode mode);
     void setTargetPosition(int pos);
     void setTargetVelocity(int pos);

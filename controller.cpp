@@ -114,13 +114,40 @@ ControllerStream::ControllerStream(int controllerPort) : controllerPort(controll
 
 void ControllerStream::init(char ssid[], char pwd[], int udpPort) 
 {
+    WiFi.begin(ssid, pwd);
     // Initialize wifi connection
-    int status = WiFi.begin(ssid);
+    int status = WiFi.waitForConnectResult();
     while (status != WL_CONNECTED)
     {
         Serial.print("Attempting to connect to SSID: ");
         Serial.println(ssid);
-        status = WiFi.begin(ssid);
+        WiFi.begin(ssid);
+        status = WiFi.waitForConnectResult();
+        Serial.print("Status: ");
+        Serial.println(status);
+        // wait 2 seconds for connection:
+        delay(2000);
+    }
+
+    Serial.println("Connected to WiFi.");
+    printWiFiStatus();
+
+    udp.begin(udpPort);
+}
+
+void ControllerStream::init(char ssid[], int udpPort)
+{
+    WiFi.begin(ssid);
+    // Initialize wifi connection
+    int status = WiFi.waitForConnectResult();
+    while (status != WL_CONNECTED)
+    {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+        WiFi.begin(ssid);
+        status = WiFi.waitForConnectResult();
+        Serial.print("Status: ");
+        Serial.println(status);
         // wait 2 seconds for connection:
         delay(2000);
     }
@@ -134,15 +161,22 @@ void ControllerStream::init(char ssid[], char pwd[], int udpPort)
 void ControllerStream::updateData()
 {
     int packetSize = udp.parsePacket();
-    if (packetSize < sizeof(ControllerData)) { return; }
+    if (packetSize < sizeof(ControllerData)) { 
+        Serial.println("No packet recieved.");
+        return; 
+    }
 
     // Read the data
-    char data[sizeof(ControllerData)];
-    udp.read(data, sizeof(ControllerData));
+    udp.read(rawIncomingData, sizeof(ControllerData));
+    // Serial.print("Data: \"");
+    // for (int i = 0; i<20; i++) {
+    //     Serial.print(data[i], HEX);
+    // }
+    // Serial.println("\"");
 
     // Copy the data into a Controller Data struct
-    memcpy(data, &incomingData, sizeof(ControllerData));
-
+    memcpy(&incomingData, rawIncomingData, sizeof(ControllerData));
+    // incomingData.print();
     // Verify that packet is valid
     if (incomingData.header[0] != 'C' 
         || incomingData.header[1] != 'O' 
@@ -151,6 +185,7 @@ void ControllerStream::updateData()
     ) 
     {
         Serial.println("Invalid packet recieved!");
+        Serial.println(incomingData.header);
         return;
     }
 

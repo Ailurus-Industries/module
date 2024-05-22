@@ -42,11 +42,11 @@ void TB6612FNG::run(int motor, int speed) {
     if(motor == 0){
         digitalWrite(AIN1, inPin1);
         digitalWrite(AIN2, inPin2);
-        analogWrite(PWMA, speed);
+        analogWrite(PWMA, abs(speed));
     } else if (motor == 1) {
         digitalWrite(BIN1, inPin1);
         digitalWrite(BIN2, inPin2);
-        analogWrite(PWMB, speed);
+        analogWrite(PWMB, abs(speed));
     }
 }
 
