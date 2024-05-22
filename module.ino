@@ -79,23 +79,25 @@ void setup()
 {
     Serial.begin(115200);
     controller.init("kyle-hotspot", "", 5000);
-    delay(2000);
+    
+    // Stop all motors
     a.setControlMode(DUTY_CYCLE);
     a.setOutput(0);
+    b.setControlMode(DUTY_CYCLE);
+    b.setOutput(0);
+    c.setControlMode(DUTY_CYCLE);
+    c.setOutput(0);
+    d.setControlMode(DUTY_CYCLE);
+    d.setOutput(0);
+
+    delay(2000);
 }
 
 void loop()
 {
-    u_long time = millis();
     controller.updateData();
-    u_long time2 = millis();
-    controller.getControllerData().print();
-    u_long time3 = millis();
-    Serial.print("Time to update data:");
-    Serial.println(time2 - time);
-    Serial.print("Time to print data: ");
-    Serial.println(time3 - time2);
-	a.periodic();
+    ControllerData controllerData = controller.getControllerData();
+    controllerData.print();
 
     /*
     if (controller.getControllerData().getLeftTriggerPressed()) {
@@ -113,32 +115,35 @@ void loop()
         a.stop();
     }
     */
-    
 
-    if (controller.getControllerData().getLeftTriggerPressed() && controller.getControllerData().getRightTriggerPressed()) {
+    if (controllerData.getLeftTriggerPressed() && controllerData.getRightTriggerPressed())
+    {
         // drive
         a.setControlMode(DUTY_CYCLE);
-        a.setOutput(map(controller.getControllerData().leftY, 0, 32767, 0, 100));
+        a.setOutput(map(controllerData.leftY, 0, 32767, 0, 100));
         b.setControlMode(DUTY_CYCLE);
-        b.setOutput(map(controller.getControllerData().rightY, 0, 32767, 0, 100));
+        b.setOutput(map(controllerData.rightY, 0, 32767, 0, 100));
 
-        if (controller.getDPadUp() == true) {
+        if (controllerData.getDPadUp() == true)
+        {
             faceMotorRightPosition += deltaFaceMotorPosition;
             faceMotorLeftPosition += deltaFaceMotorPosition;
-        } 
-        
-        if (controller.getDPadDown() == true) {
+        }
+
+        if (controllerData.getDPadDown() == true)
+        {
             faceMotorRightPosition -= deltaFaceMotorPosition;
             faceMotorLeftPosition -= deltaFaceMotorPosition;
+        }
 
-        } 
-        
-        if (controller.getDPadRight() == true) {
+        if (controllerData.getDPadRight() == true)
+        {
             faceMotorRightPosition += deltaFaceMotorPosition;
             faceMotorLeftPosition -= deltaFaceMotorPosition;
-        } 
-        
-        if (controller.getDPadLeft() == true) {
+        }
+
+        if (controllerData.getDPadLeft() == true)
+        {
             faceMotorRightPosition -= deltaFaceMotorPosition;
             faceMotorLeftPosition += deltaFaceMotorPosition;
         }
@@ -149,14 +154,48 @@ void loop()
         d.setControlMode(POSITION);
         d.setTargetPosition(faceMotorLeftPosition);
     }
-
-
-    if (controller.getControllerData().getStart()) {
-        a.zero();
+    else
+    {
+        // Stop all motors if button is not held
+        a.stop();
+        b.stop();
+        c.stop();
+        d.stop();
     }
-    Serial.print("Pos: ");
-    Serial.print(a.getPosition());
-    Serial.print(" Output: ");
-    Serial.println(a.getOutput());
+
+    if (controllerData.getStart()) 
+    {
+        a.zero();
+        b.zero();
+        c.zero();
+        d.zero();
+    }
+    
+    a.periodic();
+    b.periodic();
+    c.periodic();
+    d.periodic();
+    printMotorPositions();
+
     delay(100);
+}
+
+void printMotorPositions() 
+{
+    Serial.print("posA:");
+    Serial.print(a.getPosition());
+    Serial.print(",outputA:");
+    Serial.print(a.getOutput());
+    Serial.print("posB:");
+    Serial.print(b.getPosition());
+    Serial.print(",outputB:");
+    Serial.print(b.getOutput());
+    Serial.print("posC:");
+    Serial.print(c.getPosition());
+    Serial.print(",outputC:");
+    Serial.print(c.getOutput());
+    Serial.print("posD:");
+    Serial.print(d.getPosition());
+    Serial.print(",outputD:");
+    Serial.println(d.getOutput());
 }
