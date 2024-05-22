@@ -5,7 +5,7 @@
 #include <ESP32Encoder.h>
 #include <FastPID.h>
 
-enum ControlMode { DUTY_CYCLE, POSITION, VELOCITY, NONE };
+enum ControlMode { DUTY_CYCLE, POSITION, VELOCITY, STOP };
 
 struct PIDConstants {
     float kP; float kI; float kD;
@@ -19,7 +19,7 @@ private:
     TB6612FNG& driver;
     ESP32Encoder encoder;
     int motorID;
-    ControlMode currentMode = NONE;
+    ControlMode currentMode = STOP;
     int posSetpoint;
     int velSetpoint;
     int maxOutput;
