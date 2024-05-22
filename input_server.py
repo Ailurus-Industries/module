@@ -66,7 +66,7 @@ while True:
     joyRX = state.Gamepad.sThumbRX if abs(state.Gamepad.sThumbRX) > 3300 else 0
     joyRY = state.Gamepad.sThumbRY if abs(state.Gamepad.sThumbRY) > 3300 else 0
     data = struct.pack(
-        ">bbbIBHBBhhhh",
+        "<bbbIBHBBhhhh",
         0x43, 0x4f, 0x4e, idx, port,
         buttons, lTrigger, rTrigger,
         joyLX, joyLY, joyRX, joyRY
