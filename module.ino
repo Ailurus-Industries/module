@@ -55,15 +55,25 @@
 const PIDConstants positionPID = {0.5, 0, 0.0005};
 const PIDConstants velocityPID = {0, 0, 0};
 
-TB6612FNG driverAB(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
-// TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
+const int gearRatio = 298 * 12;
 
+TB6612FNG driverAB(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
+TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
+
+// drive motors
 MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID, true);
-// MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID);
-// MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID);
-// MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID);
+MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID, true);
+
+// face motors 
+MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID, true);
+MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID, true);
 
 ControllerStream controller(0);
+
+int faceMotorRightPosition = 0;
+int faceMotorLeftPosition = 0;
+
+const int deltaFaceMotorPosition = 1;
 
 void setup()
 {
@@ -87,6 +97,7 @@ void loop()
     Serial.println(time3 - time2);
 	a.periodic();
 
+    /*
     if (controller.getControllerData().getLeftTriggerPressed()) {
         a.setControlMode(DUTY_CYCLE);
         a.setOutput(map(controller.getControllerData().leftY, 0, 32767, 0, 100));
@@ -101,6 +112,44 @@ void loop()
     } else {
         a.stop();
     }
+    */
+    
+
+    if (controller.getControllerData().getLeftTriggerPressed() && controller.getControllerData().getRightTriggerPressed()) {
+        // drive
+        a.setControlMode(DUTY_CYCLE);
+        a.setOutput(map(controller.getControllerData().leftY, 0, 32767, 0, 100));
+        b.setControlMode(DUTY_CYCLE);
+        b.setOutput(map(controller.getControllerData().rightY, 0, 32767, 0, 100));
+
+        if (controller.getDPadUp() == true) {
+            faceMotorRightPosition += deltaFaceMotorPosition;
+            faceMotorLeftPosition += deltaFaceMotorPosition;
+        } 
+        
+        if (controller.getDPadDown() == true) {
+            faceMotorRightPosition -= deltaFaceMotorPosition;
+            faceMotorLeftPosition -= deltaFaceMotorPosition;
+
+        } 
+        
+        if (controller.getDPadRight() == true) {
+            faceMotorRightPosition += deltaFaceMotorPosition;
+            faceMotorLeftPosition -= deltaFaceMotorPosition;
+        } 
+        
+        if (controller.getDPadLeft() == true) {
+            faceMotorRightPosition -= deltaFaceMotorPosition;
+            faceMotorLeftPosition += deltaFaceMotorPosition;
+        }
+
+        // face
+        c.setControlMode(POSITION);
+        c.setTargetPosition(faceMotorRightPosition);
+        d.setControlMode(POSITION);
+        d.setTargetPosition(faceMotorLeftPosition);
+    }
+
 
     if (controller.getControllerData().getStart()) {
         a.zero();
