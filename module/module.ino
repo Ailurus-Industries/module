@@ -73,7 +73,8 @@ ControllerStream controller(0);
 int faceMotorRightPosition = 0;
 int faceMotorLeftPosition = 0;
 
-const int deltaFaceMotorPosition = 200;
+const int translationStep = 200;
+const int rotationStep = 500;
 
 void setup()
 {
@@ -97,6 +98,8 @@ int lastRightPos = 0;
 int lastLeftPos = 0;
 int topFacePos = 0;
 int topFaceRot = 0;
+const int maxTopFacePos = 3000;
+const int minTopFacePos = -3000;
 
 void loop()
 {
@@ -125,15 +128,16 @@ void loop()
     int newLeftPos = b.getPosition();
     int rightDiff = newRightPos - lastRightPos;
     int leftDiff = newLeftPos - lastLeftPos;
-    topFacePos += (rightDiff + leftDiff) / 2;
-    topFaceRot += (rightDiff - leftDiff) / 2;
+    // Note: should be the other way around, but one of the faces is inverted
+    topFacePos += (rightDiff - leftDiff) / 2;
+    topFaceRot += (rightDiff + leftDiff) / 2;
     lastRightPos = newRightPos;
     lastLeftPos = newLeftPos;
 
     Serial.print("Top pos:");
-    Serial.print(newRightPos);
+    Serial.print(topFacePos);
     Serial.print(",Top rot:");
-    Serial.println(newRightPos);
+    Serial.println(topFaceRot);
 
     if (controllerData.getLeftTriggerPressed() && controllerData.getRightTriggerPressed())
     {
@@ -143,28 +147,28 @@ void loop()
         d.setControlMode(DUTY_CYCLE);
         d.setOutput(map(controllerData.rightY, 0, 32767, 0, 100));
 
-        if (controllerData.getDPadUp() == true)
+        if (controllerData.getDPadUp() == true && topFacePos < maxTopFacePos)
         {
-            faceMotorRightPosition -= deltaFaceMotorPosition;
-            faceMotorLeftPosition += deltaFaceMotorPosition;
+            faceMotorRightPosition -= translationStep;
+            faceMotorLeftPosition += translationStep;
         }
 
-        if (controllerData.getDPadDown() == true)
+        if (controllerData.getDPadDown() == true && topFacePos > minTopFacePos)
         {
-            faceMotorRightPosition += deltaFaceMotorPosition;
-            faceMotorLeftPosition -= deltaFaceMotorPosition;
+            faceMotorRightPosition += translationStep;
+            faceMotorLeftPosition -= translationStep;
         }
 
         if (controllerData.getDPadRight() == true)
         {
-            faceMotorRightPosition -= deltaFaceMotorPosition;
-            faceMotorLeftPosition -= deltaFaceMotorPosition;
+            faceMotorRightPosition -= rotationStep;
+            faceMotorLeftPosition -= rotationStep;
         }
 
         if (controllerData.getDPadLeft() == true)
         {
-            faceMotorRightPosition += deltaFaceMotorPosition;
-            faceMotorLeftPosition += deltaFaceMotorPosition;
+            faceMotorRightPosition += rotationStep;
+            faceMotorLeftPosition += rotationStep;
         }
 
         // face
