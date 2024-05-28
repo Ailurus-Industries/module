@@ -12,20 +12,20 @@
 // 25 PWMB     23 PWMD 
 // 19 BOUT2    22 DOUT2
 // 18 BOUT1    21 DOUT1
-// 15 PWMA     17 PWMC 
-// 14 AOUT2    16 COUT2
-// 13 AOUT1    5  COUT1
-// 12 STBY1    4  STBY2
+// 15 STBY1    17 STBY2
+// 14 AOUT1    16 COUT1
+// 13 AOUT2     5 COUT2
+// 12 PWMA      4 PWMC
 
 
 // Motor Controller #1
-#define PWMA  15
+#define PWMA  12
 #define AOUT1 14
 #define AOUT2 13
 #define PWMB  25
 #define BOUT1 18
 #define BOUT2 19
-#define STBY1 12
+#define STBY1 15
 
 // Encoder Pins
 #define AIN1 26
@@ -52,7 +52,7 @@
 // Out of 255: 6V out of 8.4 V = 182
 #define MAX_SPEED 180
 
-const PIDConstants positionPID = {0.5, 0, 0.0005};
+const PIDConstants positionPID = {0.5, 0, 0.01};
 const PIDConstants velocityPID = {0, 0, 0};
 
 const int gearRatio = 298 * 12;
@@ -60,20 +60,20 @@ const int gearRatio = 298 * 12;
 TB6612FNG driverAB(PWMA, PWMB, AOUT1, AOUT2, BOUT1, BOUT2, STBY1);
 TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
 
-// drive motors
-MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID, true);
-MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID, true);
+// face motors
+MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID, false, false);
+MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID, false, true);
 
-// face motors 
-MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID, true);
-MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID, true);
+// drive motors 
+MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID, true, false);
+MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID, false, true);
 
 ControllerStream controller(0);
 
 int faceMotorRightPosition = 0;
 int faceMotorLeftPosition = 0;
 
-const int deltaFaceMotorPosition = 1;
+const int deltaFaceMotorPosition = 200;
 
 void setup()
 {
@@ -93,11 +93,16 @@ void setup()
     delay(2000);
 }
 
+int lastRightPos = 0;
+int lastLeftPos = 0;
+int topFacePos = 0;
+int topFaceRot = 0;
+
 void loop()
 {
     controller.updateData();
     ControllerData controllerData = controller.getControllerData();
-    controllerData.print();
+    // controllerData.print();
 
     /*
     if (controller.getControllerData().getLeftTriggerPressed()) {
@@ -115,44 +120,58 @@ void loop()
         a.stop();
     }
     */
+    
+    int newRightPos = a.getPosition();
+    int newLeftPos = b.getPosition();
+    int rightDiff = newRightPos - lastRightPos;
+    int leftDiff = newLeftPos - lastLeftPos;
+    topFacePos += (rightDiff + leftDiff) / 2;
+    topFaceRot += (rightDiff - leftDiff) / 2;
+    lastRightPos = newRightPos;
+    lastLeftPos = newLeftPos;
+
+    Serial.print("Top pos:");
+    Serial.print(newRightPos);
+    Serial.print(",Top rot:");
+    Serial.println(newRightPos);
 
     if (controllerData.getLeftTriggerPressed() && controllerData.getRightTriggerPressed())
     {
         // drive
-        a.setControlMode(DUTY_CYCLE);
-        a.setOutput(map(controllerData.leftY, 0, 32767, 0, 100));
-        b.setControlMode(DUTY_CYCLE);
-        b.setOutput(map(controllerData.rightY, 0, 32767, 0, 100));
+        c.setControlMode(DUTY_CYCLE);
+        c.setOutput(map(controllerData.leftY, 0, 32767, 0, 100));
+        d.setControlMode(DUTY_CYCLE);
+        d.setOutput(map(controllerData.rightY, 0, 32767, 0, 100));
 
         if (controllerData.getDPadUp() == true)
         {
-            faceMotorRightPosition += deltaFaceMotorPosition;
+            faceMotorRightPosition -= deltaFaceMotorPosition;
             faceMotorLeftPosition += deltaFaceMotorPosition;
         }
 
         if (controllerData.getDPadDown() == true)
         {
-            faceMotorRightPosition -= deltaFaceMotorPosition;
+            faceMotorRightPosition += deltaFaceMotorPosition;
             faceMotorLeftPosition -= deltaFaceMotorPosition;
         }
 
         if (controllerData.getDPadRight() == true)
         {
-            faceMotorRightPosition += deltaFaceMotorPosition;
+            faceMotorRightPosition -= deltaFaceMotorPosition;
             faceMotorLeftPosition -= deltaFaceMotorPosition;
         }
 
         if (controllerData.getDPadLeft() == true)
         {
-            faceMotorRightPosition -= deltaFaceMotorPosition;
+            faceMotorRightPosition += deltaFaceMotorPosition;
             faceMotorLeftPosition += deltaFaceMotorPosition;
         }
 
         // face
-        c.setControlMode(POSITION);
-        c.setTargetPosition(faceMotorRightPosition);
-        d.setControlMode(POSITION);
-        d.setTargetPosition(faceMotorLeftPosition);
+        a.setControlMode(POSITION);
+        a.setTargetPosition(faceMotorRightPosition);
+        b.setControlMode(POSITION);
+        b.setTargetPosition(faceMotorLeftPosition);
     }
     else
     {
@@ -169,8 +188,20 @@ void loop()
         b.zero();
         c.zero();
         d.zero();
+        lastRightPos = 0;
+        lastLeftPos = 0;
+        topFacePos = 0;
+        topFaceRot = 0;
     }
-    
+
+    if (controllerData.getBack() || controllerData.getStart())
+    {
+        a.setTargetPosition(0);
+        b.setTargetPosition(0);
+        c.setTargetPosition(0);
+        d.setTargetPosition(0);
+    }
+
     a.periodic();
     b.periodic();
     c.periodic();
@@ -184,18 +215,26 @@ void printMotorPositions()
 {
     Serial.print("posA:");
     Serial.print(a.getPosition());
+    Serial.print(",targetPosA:");
+    Serial.print(a.getTargetPosition());
     Serial.print(",outputA:");
     Serial.print(a.getOutput());
-    Serial.print("posB:");
+    Serial.print(",posB:");
     Serial.print(b.getPosition());
     Serial.print(",outputB:");
     Serial.print(b.getOutput());
-    Serial.print("posC:");
+    Serial.print(",targetPosB:");
+    Serial.print(b.getTargetPosition());
+    Serial.print(",posC:");
     Serial.print(c.getPosition());
     Serial.print(",outputC:");
     Serial.print(c.getOutput());
-    Serial.print("posD:");
+    // Serial.print("targetPosC:");
+    // Serial.print(c.getTargetPosition());
+    Serial.print(",posD:");
     Serial.print(d.getPosition());
     Serial.print(",outputD:");
     Serial.println(d.getOutput());
+    // Serial.print("targetPosD:");
+    // Serial.print(d.getTargetPosition());
 }

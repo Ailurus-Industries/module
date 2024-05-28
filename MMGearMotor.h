@@ -27,9 +27,10 @@ private:
     int currPos;
     int velocity;
     int currOutput;
-    bool inverted;
+    bool encoderInverted;
+    bool outputInverted;
 public:
-    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst, bool inverted);
+    MMGearMotor(TB6612FNG& motorDriver, int id, int enc1, int enc2, int maxOutput, const PIDConstants posConst, const PIDConstants velConst, bool encoderInverted, bool motorInverted);
     void setControlMode(ControlMode mode);
     void setTargetPosition(int pos);
     void setTargetVelocity(int pos);
@@ -38,6 +39,7 @@ public:
     void stop();
     void zero();
     void setPosition(int pos);
+    int getTargetPosition();
     int getPosition();
     int getOutput();
     TB6612FNG& getDriver();

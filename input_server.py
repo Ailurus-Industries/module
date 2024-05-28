@@ -18,7 +18,7 @@ port = available_ports[0]
 print(f"Available Controllers: {available_ports}")
 print(f"Controller Port {port} selected.")
 
-ADDR = ("10.42.0.74", 5000)
+ADDR = ("10.42.0.40", 5000)
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 idx = 0
