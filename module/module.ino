@@ -62,18 +62,18 @@ TB6612FNG driverCD(PWMC, PWMD, COUT1, COUT2, DOUT1, DOUT2, STBY2);
 
 // face motors
 MMGearMotor a(driverAB, 0, AIN1, AIN2, MAX_SPEED, positionPID, velocityPID, false, false);
-MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID, false, true);
+MMGearMotor b(driverAB, 1, BIN1, BIN2, MAX_SPEED, positionPID, velocityPID, false, false);
 
 // drive motors 
 MMGearMotor c(driverCD, 0, CIN1, CIN2, MAX_SPEED, positionPID, velocityPID, true, false);
-MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID, false, true);
+MMGearMotor d(driverCD, 1, DIN1, DIN2, MAX_SPEED, positionPID, velocityPID, false, false);
 
 ControllerStream controller(0);
 
 int faceMotorRightPosition = 0;
 int faceMotorLeftPosition = 0;
 
-const int translationStep = 200;
+const int translationStep = 50;
 const int rotationStep = 500;
 
 void setup()
@@ -98,8 +98,8 @@ int lastRightPos = 0;
 int lastLeftPos = 0;
 int topFacePos = 0;
 int topFaceRot = 0;
-const int maxTopFacePos = 3000;
-const int minTopFacePos = -3000;
+// const int maxTopFacePos = 1000;
+// const int minTopFacePos = -1000;
 
 void loop()
 {
@@ -147,13 +147,13 @@ void loop()
         d.setControlMode(DUTY_CYCLE);
         d.setOutput(map(controllerData.rightY, 0, 32767, 0, 100));
 
-        if (controllerData.getDPadUp() == true && topFacePos < maxTopFacePos)
+        if (controllerData.getDPadUp() == true)
         {
             faceMotorRightPosition -= translationStep;
             faceMotorLeftPosition += translationStep;
         }
 
-        if (controllerData.getDPadDown() == true && topFacePos > minTopFacePos)
+        if (controllerData.getDPadDown() == true)
         {
             faceMotorRightPosition += translationStep;
             faceMotorLeftPosition -= translationStep;
@@ -196,6 +196,8 @@ void loop()
         lastLeftPos = 0;
         topFacePos = 0;
         topFaceRot = 0;
+        faceMotorLeftPosition = 0;
+        faceMotorRightPosition = 0;
     }
 
     if (controllerData.getBack() || controllerData.getStart())

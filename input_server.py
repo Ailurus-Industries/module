@@ -5,28 +5,12 @@ import time
 import struct
 import multiprocessing
 
-controller_statuses: List[int] = []
-
-while True not in controller_statuses:
-    controller_statuses = XInput.get_connected()
-    if True not in controller_statuses:
-        print("No controllers available! Press enter to try again. ", end="")
-        input()
-
-available_ports = [i for i, x in enumerate(controller_statuses) if x]
-port = available_ports[0]
-
-print(f"Available Controllers: {available_ports}")
-print(f"Controller Port {port} selected.")
-
-ADDR1 = ("10.42.0.40", 5000)
-ADDR2 = ("10.42.0.40", 5000)
-
 
 def send_data(port, addr):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     idx = 0
     while True:
+        print(addr)
         state = XInput.get_state(port)
 
         buttons = state.Gamepad.wButtons
@@ -58,7 +42,44 @@ def send_data(port, addr):
         sock.sendto(data, addr)
 
 
-multiprocessing.pool()
+def main():
+    controller_statuses: List[int] = []
+
+    while True not in controller_statuses:
+        controller_statuses = XInput.get_connected()
+        if True not in controller_statuses:
+            print("No controllers available! Press enter to try again. ",
+                  end="")
+            input()
+
+    available_ports = [i for i, x in enumerate(controller_statuses) if x]
+    port = available_ports[0]
+
+    print(f"Available Controllers: {available_ports}")
+    print(f"Controller Port {port} selected.")
+
+    ADDR1 = ("10.42.0.14", 5000)
+    CLAW = ("10.42.0.140", 5000)
+    # ADDR2 = ("10.42.0.40", 5000)
+    ADDR3 = ("10.42.0.74", 5000)
+
+    p = multiprocessing.Process(
+        target=send_data, args=(available_ports[0], ADDR1)
+    )
+    p.start()
+    p2 = multiprocessing.Process(
+        target=send_data, args=(available_ports[1], ADDR3)
+    )
+    p2.start()
+
+    p3 = multiprocessing.Process(
+        target=send_data, args=(available_ports[0], CLAW)
+    )
+    p3.start()
+
+    p.join()
+    p2.join()
+    p3.join()
 
 
 # {
@@ -93,3 +114,7 @@ multiprocessing.pool()
 # print(button_values)
 # print(trigger_values)
 # print(thumb_values)
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    main()

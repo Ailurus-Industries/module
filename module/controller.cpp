@@ -195,6 +195,7 @@ void ControllerStream::updateData()
         lastMessageIndex = incomingData.index;
         currentData = incomingData;
     }
+    udp.flush();
 }
 
 void ControllerStream::printWiFiStatus()

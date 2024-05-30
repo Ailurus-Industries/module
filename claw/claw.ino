@@ -1,7 +1,7 @@
 #include "controller.h"
 #include <WiFi.h>
+#include "user_interface.h"
 
-<<<<<<< HEAD
 // Define the PWM pin for the servo
 const int servoPin = 16;
 
@@ -12,6 +12,25 @@ const int closePosition = 0; // Adjust as needed
 int position = 0;
 
 ControllerStream controller(0);
+WiFiClient client;
+
+void printWiFiStatus()
+{
+    // print the SSID of the network you're attached to:
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
+
+    // print your local IP address:
+    IPAddress ip = WiFi.localIP();
+    Serial.print("IP Address: ");
+    Serial.println(ip);
+
+    // print the received signal strength:
+    long rssi = WiFi.RSSI();
+    Serial.print("signal strength (RSSI):");
+    Serial.print(rssi);
+    Serial.println(" dBm");
+}
 
 void setup()
 {
@@ -44,12 +63,17 @@ void setup()
     Serial.println("Connected to WiFi.");
     printWiFiStatus();
 
+    
+
+    
+
     // Initialize the servo to the closed position
     // myServo.write(closePosition);
 
     // Optional: Add a small delay to allow the servo to reach the initial position
     delay(1000);
 }
+
 
 void loop()
 {
@@ -73,49 +97,4 @@ void loop()
 
     analogWrite(servoPin, position);
     delay(100);
-=======
-#include <Servo.h>
-
-// Create a Servo object
-Servo myServo;
-
-// Define the PWM pin for the servo
-const int servoPin = 14;
-
-// Define the open and close positions (in degrees)
-const int openPosition = 90; // Adjust as needed
-const int closePosition = 0; // Adjust as needed
-
-boolean position = 0;
-
-ControllerStream controller(0);
-
-void setup() {
-
-  controller.init("kyle-hotspot", "", 5000);
-
-  // Attach the servo to the PWM pin
-  myServo.attach(servoPin);
-
-  // Initialize the servo to the closed position
-  myServo.write(closePosition);
-
-  // Optional: Add a small delay to allow the servo to reach the initial position
-  delay(1000);
-}
-
-void loop() {
-  controller.updateData();
-  ControllerData controllerData = controller.getControllerData();
-  // Open the servo
-  
-  if (controllerData.getA()) {
-    position = openPosition;
-  } else if (controllerData.getB()) {
-    position = closePosition;
-  }
-  
-  myServo.write(position);
-  delay(100);
->>>>>>> 0c1f0502bf266b33ec2331396dad4248f6ce20e9
 }
