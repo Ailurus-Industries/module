@@ -1,6 +1,8 @@
 #include "controller.h"
-#include <WiFi.h>
+// #include <WiFi.h>
+#include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
+#include "user_interface.h"
 
 void ControllerData::print()
 {
@@ -114,7 +116,9 @@ ControllerStream::ControllerStream(int controllerPort) : controllerPort(controll
 
 void ControllerStream::init(char ssid[], char pwd[], int udpPort) 
 {
+    WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, pwd);
+    WiFi.setOutputPower(20.5);
     // Initialize wifi connection
     int status = WiFi.waitForConnectResult();
     while (status != WL_CONNECTED)
@@ -128,11 +132,17 @@ void ControllerStream::init(char ssid[], char pwd[], int udpPort)
         // wait 2 seconds for connection:
         delay(2000);
     }
-
+    wifi_set_sleep_type(NONE_SLEEP_T);
     Serial.println("Connected to WiFi.");
     printWiFiStatus();
 
-    udp.begin(udpPort);
+    int udpstatus = udp.begin(udpPort);
+    while (udpstatus != 1) 
+    {
+        Serial.println("Unable to start UDP!");
+        udpstatus = udp.begin(udpPort);
+    }
+    Serial.println("Udp Initialized!");
 }
 
 void ControllerStream::init(char ssid[], int udpPort)
@@ -160,9 +170,13 @@ void ControllerStream::init(char ssid[], int udpPort)
 
 void ControllerStream::updateData()
 {
+    WiFi.forceSleepWake();
     int packetSize = udp.parsePacket();
     if (packetSize < sizeof(ControllerData)) { 
         Serial.println("No packet recieved.");
+        Serial.print("Packet size: ");
+        Serial.println(packetSize);
+        udp.flush();
         return; 
     }
 
@@ -195,6 +209,7 @@ void ControllerStream::updateData()
         lastMessageIndex = incomingData.index;
         currentData = incomingData;
     }
+    udp.flush();
 }
 
 void ControllerStream::printWiFiStatus()
