@@ -59,8 +59,8 @@ def main():
     print(f"Controller Port {port} selected.")
 
     ADDR1 = ("10.42.0.14", 5000)
-    CLAW = ("10.42.0.140", 5000)
-    # ADDR2 = ("10.42.0.40", 5000)
+    # CLAW = ("10.42.0.140", 5000)
+    # ADDR2 = ("10.42.0.249", 5000)
     ADDR3 = ("10.42.0.74", 5000)
 
     p = multiprocessing.Process(
@@ -72,14 +72,20 @@ def main():
     )
     p2.start()
 
-    p3 = multiprocessing.Process(
-        target=send_data, args=(available_ports[0], CLAW)
-    )
-    p3.start()
+    # p3 = multiprocessing.Process(
+    #     target=send_data, args=(available_ports[0], CLAW)
+    # )
+    # p3.start()
+
+    # p4 = multiprocessing.Process(
+    #     target=send_data, args=(available_ports[0], ADDR2)
+    # )
+    # p4.start()
 
     p.join()
     p2.join()
-    p3.join()
+    # p3.join()
+    # p4.join()
 
 
 # {

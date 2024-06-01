@@ -12,7 +12,7 @@ const int closePosition = 0; // Adjust as needed
 int position = 0;
 
 ControllerStream controller(0);
-WiFiClient client;
+WiFiServer server;
 
 void printWiFiStatus()
 {
